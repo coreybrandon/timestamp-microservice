@@ -1,11 +1,19 @@
+// main.go
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"os"
 )
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+
 	handler := http.HandlerFunc(TimeServer)
-	log.Fatal(http.ListenAndServe(":5000", handler))
+	fmt.Printf("Listening on %s...", port)
+	http.ListenAndServe(":"+port, handler)
 }
