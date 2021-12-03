@@ -1,40 +1,42 @@
+//server_test.go
+
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-// Testing Unix Timestamp response
-func TestGETUnix(t *testing.T) {
-	t.Run("Returns a unix key that is a Unix timestamp of the input date in milliseconds", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "api/2015-12-25", nil) // Leveraging ResponseWriter to inspect what is being written by the handler
-		response := httptest.NewRecorder()                                   // Inspecting what was written as a response
+func TestGetTimeStamp(t *testing.T) {
+	t.Run("returns Unix Timestamp", func(t *testing.T) {
+		request := newGetTimeStampRequest("1451001600000")
+		response := httptest.NewRecorder()
 
 		TimeServer(response, request)
 
-		got := response.Body.String()
-		want := "1451001600000"
+		assertResponseBody(t, response.Body.String(), "{\"unix\":1451001600000,\"utc\":\"47950-05-31 00:00:00 GMT\"}\n")
+	})
 
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+	t.Run("returns UTC Timestamp", func(t *testing.T) {
+		request := newGetTimeStampRequest("2015-12-25")
+		response := httptest.NewRecorder()
+
+		TimeServer(response, request)
+
+		assertResponseBody(t, response.Body.String(), "{\"unix\":1451001600,\"utc\":\"2015-12-25 00:00:00 GMT\"}\n")
 	})
 }
 
-// func TestGETUtc(t *testing.T) {
-// 	t.Run("Returns a utc key that is a string of the input date", func(t *testing.T) {
-// 		request, _ := http.NewRequest(http.MethodGet, "/api/1451001600000", nil) // Leveraging ResponseWriter to inspect what is being written by the handler
-// 		response := httptest.NewRecorder()                                       // Inspecting what was written as a response
+func newGetTimeStampRequest(name string) *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/%s", name), nil)
+	return req
+}
 
-// 		TimeServer(response, request)
-
-// 		got := response.Body.String()
-// 		want := "Fri, 25 Dec 2015 00:00:00 GMT"
-
-// 		if got != want {
-// 			t.Errorf("got %q, want %q", got, want)
-// 		}
-// 	})
-// }
+func assertResponseBody(t testing.TB, got, want string) {
+	t.Helper()
+	if got != want {
+		t.Errorf("response body is wrong, got %q want %q", got, want)
+	}
+}
