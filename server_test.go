@@ -16,8 +16,10 @@ func TestGetTimeStamp(t *testing.T) {
 
 		TimeServer(response, request)
 
-		assertResponseBody(t, response.Body.String(), "{\"unix\":1451001600000,\"utc\":\"47950-05-31 00:00:00 GMT\"}\n")
+		assertResponseBody(t, response.Body.String(), "{\"unix\":1451001600000,\"utc\":\"Fri, 25 Dec 2015 00:00:00 GMT\"}")
 	})
+
+	// @Todo - Return the actual UTC Timestamp. So far I'm just getting Unix time back.
 
 	t.Run("returns UTC Timestamp", func(t *testing.T) {
 		request := newGetTimeStampRequest("2015-12-25")
@@ -25,12 +27,12 @@ func TestGetTimeStamp(t *testing.T) {
 
 		TimeServer(response, request)
 
-		assertResponseBody(t, response.Body.String(), "{\"unix\":1451001600,\"utc\":\"2015-12-25 00:00:00 GMT\"}\n")
+		assertResponseBody(t, response.Body.String(), "{\"unix\":1451001600000,\"utc\":\"Fri, 25 Dec 2015 00:00:00 GMT\"}")
 	})
 }
 
-func newGetTimeStampRequest(name string) *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/%s", name), nil)
+func newGetTimeStampRequest(date string) *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/%s", date), nil)
 	return req
 }
 
