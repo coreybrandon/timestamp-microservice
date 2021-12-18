@@ -12,10 +12,12 @@ import (
 	"time"
 )
 
-type StubTimeStamp struct {
-	Unix int64  `json:"unix"`
-	UTC  string `json:"utc"`
-}
+// Didn't end up using this.
+
+// type StubTimeStamp struct {
+// 	Unix int64  `json:"unix"`
+// 	UTC  string `json:"utc"`
+// }
 
 func TestGetTimeStamp(t *testing.T) {
 	t.Run("returns Unix Timestamp", func(t *testing.T) {
