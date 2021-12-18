@@ -10,24 +10,30 @@ import (
 	"time"
 )
 
+type Log struct {
+	Error string `json:"error"`
+}
+
 type TimeStamp struct {
 	Unix int64  `json:"unix"`
 	UTC  string `json:"utc"`
 }
 
-func TimeServer(w http.ResponseWriter, r *http.Request) {
+func TimeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	api := strings.TrimPrefix(r.URL.Path, "/api/")
 
 	ts, err := getTimeStamp(api)
 
-	jsonString, err := json.Marshal(ts)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		j, _ := json.Marshal(&Log{Error: "Invalid Date"})
+		fmt.Fprint(w, string(j))
 		return
+
 	}
-	w.Write(jsonString)
-	fmt.Fprint(w, string(jsonString))
+
+	j, _ := json.Marshal(ts)
+	fmt.Fprint(w, string(j))
 }
 
 func getTimeStamp(api string) (*TimeStamp, error) {
