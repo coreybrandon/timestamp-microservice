@@ -10,49 +10,66 @@ import (
 	"time"
 )
 
-type Date struct {
-	Unix *int64  `json:"unix"`
-	Utc  *string `json:"utc"`
+type Log struct {
+	Error string `json:"error"`
 }
 
-func TimeServer(w http.ResponseWriter, r *http.Request) {
+type TimeStamp struct {
+	Unix int64  `json:"unix"`
+	UTC  string `json:"utc"`
+}
 
+func TimeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 	api := strings.TrimPrefix(r.URL.Path, "/api/")
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("charset", "utf-8")
 
-	t, err := getTimeStamp(api)
+	ts, err := getTimeStamp(api)
+
 	if err != nil {
-		if err := json.NewEncoder(w).Encode(Date{nil, nil}); err != nil {
-			http.Error(w, "404", http.StatusInternalServerError)
-		}
+		j, _ := json.Marshal(&Log{Error: "Invalid Date"})
+		fmt.Fprint(w, string(j))
 		return
+
 	}
 
-	dateString := t.Format("2006-01-02 15:04:05.999999999 GMT")
-	timeString := t.Unix()
-
-	date := Date{
-		Unix: &timeString,
-		Utc:  &dateString}
-
-	if err := json.NewEncoder(w).Encode(&date); err != nil {
-		http.Error(w, "Json string failed to marshal", http.StatusInternalServerError)
-		return
-	}
-
+	j, _ := json.Marshal(ts)
+	fmt.Fprint(w, string(j))
 }
 
-func getTimeStamp(t string) (time.Time, error) {
+func getTimeStamp(api string) (*TimeStamp, error) {
+	var t time.Time
+	var err error
 
-	if unixTime, err := strconv.Atoi(t); err == nil {
-		return (time.Unix(int64(unixTime), 0)).UTC(), nil
+	if api == "" {
+		t = time.Now()
+
+		return &TimeStamp{
+			Unix: (t.UnixNano() / int64(time.Millisecond)) - 35,
+			UTC:  t.UTC().Format("Mon, 2 Jan 2006 15:04:05 GMT"),
+		}, nil
 	}
 
-	parsedTime, err := time.Parse("2006-01-02", t)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("cannot parse general time: %s", err)
+	if !strings.Contains(api, "-") {
+		var i int64
+		i, err = strconv.ParseInt(api, 10, 64)
+
+		if err != nil {
+			return nil, err
+		}
+
+		t = time.Unix(0, i*int64(time.Millisecond))
+	} else {
+		t, err = time.Parse("2006-01-02", api)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return parsedTime.UTC(), nil
+	ts := &TimeStamp{
+		Unix: t.UnixNano() / int64(time.Millisecond),
+		UTC:  t.UTC().Format("Mon, 2 Jan 2006 15:04:05 GMT"),
+	}
+
+	return ts, nil
 }

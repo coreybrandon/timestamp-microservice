@@ -13,7 +13,7 @@ func main() {
 		port = "5000"
 	}
 
-	handler := http.HandlerFunc(TimeServer)
+	handler := http.HandlerFunc(TimeHandler)
 	fmt.Printf("Listening on %s...", port)
 	http.ListenAndServe(":"+port, handler)
 }
