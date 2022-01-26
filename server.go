@@ -29,7 +29,6 @@ func TimeHandler(w http.ResponseWriter, r *http.Request) {
 		j, _ := json.Marshal(&Log{Error: "Invalid Date"})
 		fmt.Fprint(w, string(j))
 		return
-
 	}
 
 	j, _ := json.Marshal(ts)
